@@ -9,7 +9,7 @@ public class TaskVM {
     private String status;
     private String priority;
     public String getPriority() {
-        return priority; // return priority
+        return priority;
     }
 
     public void setPriority(String priority) {
