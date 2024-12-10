@@ -9,15 +9,15 @@ public class TaskVM {
     private String status;
     private String priority;
     public String getPriority() {
-        return priority; // return priority
+        return priority;
     }
 
     public void setPriority(String priority) {
         this.priority = priority;
     }
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt; // cmt1
+    private LocalDateTime updatedAt; // cmt2
 
     public TaskVM() {
     }
