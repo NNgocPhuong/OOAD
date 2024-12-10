@@ -16,8 +16,8 @@ public class TaskVM {
         this.priority = priority;
     }
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt; // cmt1
+    private LocalDateTime updatedAt; // cmt2
 
     public TaskVM() {
     }
