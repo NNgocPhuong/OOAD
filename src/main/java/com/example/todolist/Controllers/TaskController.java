@@ -14,7 +14,7 @@ import java.util.List;
 
 
     @RestController
-    @RequestMapping("api/tasks")
+    @RequestMapping("tasks")
     public class TaskController {
 
         @Autowired
@@ -38,13 +38,21 @@ import java.util.List;
             }
         }
         @GetMapping("/personal/{userId}")
-        public List<TaskVM> getPersonalTasks(@PathVariable int userId) {
-            return taskRepository.findPersonalTasksByUserId(userId);
+        public ResponseEntity<List<TaskVM>> getPersonalTasks(@PathVariable int userId) {
+            List<TaskVM> tasks = taskRepository.findPersonalTasksByUserId(userId);
+            if(tasks.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(tasks);
         }
 
         @GetMapping("/group/{groupId}")
-        public List<TaskVM> getGroupTasks(@PathVariable int groupId) {
-            return taskRepository.findGroupTasksByGroupId(groupId);
+        public ResponseEntity<List<TaskVM>> getGroupTasks(@PathVariable int groupId) {
+            List<TaskVM> tasks = taskRepository.findGroupTasksByGroupId(groupId);
+            if(tasks.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(tasks);
         }
 
 
