@@ -13,7 +13,7 @@ import java.util.List;
 
 
     @RestController
-    @RequestMapping("tasks")
+    @RequestMapping("/tasks")
     public class TaskController {
 
         @Autowired
@@ -52,24 +52,33 @@ import java.util.List;
             return ResponseEntity.ok(savedTask);
         }
 
-        // @PutMapping("/{id}")
-        // public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
-        //     Task updatedTask = taskRepository.updateTask(id, taskDetails);
-        //     if (updatedTask != null) {
-        //         return ResponseEntity.ok(updatedTask);
-        //     } else {
-        //         return ResponseEntity.notFound().build();
-        //     }
-        // }
+        @PutMapping("/{id}")
+        public ResponseEntity<Task> updateTask(@PathVariable int id, @RequestBody TaskVM taskDetails) {
+            Task task = taskRepository.findById(id).orElse(null);
+            if (task == null) {
+                return ResponseEntity.notFound().build();
+            }
+            task.setTitle(taskDetails.getTitle());
+            task.setDescription(taskDetails.getDescription());
+            task.setStatus(taskDetails.getStatus());
+            task.setPriority(taskDetails.getPriority());
+            task.setUpdatedAt(LocalDateTime.now());
+            Task updatedTask = taskRepository.save(task);
+            return ResponseEntity.ok(updatedTask);
+        }
 
-        // @DeleteMapping("/{id}")
-        // public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        //     boolean isDeleted = taskRepository.deleteTask(id);
-        //     if (isDeleted) {
-        //         return ResponseEntity.noContent().build();
-        //     } else {
-        //         return ResponseEntity.notFound().build();
-        //     }
-        // }
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteTask(@PathVariable int id) {
+            try {
+                Task task = taskRepository.findById(id).orElse(null);
+                if (task == null) {
+                    return ResponseEntity.notFound().build();
+                }
+                taskRepository.deleteById_task(id);
+                return ResponseEntity.noContent().build();
+            } catch (Exception e) {
+                return ResponseEntity.status(500).build();
+            }
+        }
     }
 
