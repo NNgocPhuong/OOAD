@@ -19,4 +19,10 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     List<TaskVM> findByPriority_task(String priority);
     @Query("DELETE FROM Task t WHERE t.taskId = :id")
     void deleteById_task(int id);
+
+    @Query("SELECT new com.example.todolist.ViewModels.TaskVM(t.taskId, t.title, t.description, t.status, t.priority, t.createdAt, t.updatedAt) FROM Task t WHERE t.assignedUser.userId = :userId")
+    List<TaskVM> findPersonalTasksByUserId(int userId);
+
+    @Query("SELECT new com.example.todolist.ViewModels.TaskVM(t.taskId, t.title, t.description, t.status, t.priority, t.createdAt, t.updatedAt) FROM Task t JOIN GroupTask gt ON t.taskId = gt.task.taskId WHERE gt.group.groupId = :groupId")
+    List<TaskVM> findGroupTasksByGroupId(int groupId);
 }

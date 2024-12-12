@@ -3,6 +3,7 @@ package com.example.todolist.Controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import com.example.todolist.Models.Task;
 import com.example.todolist.Repository.TaskRepository;
 import com.example.todolist.ViewModels.TaskVM;
@@ -18,6 +19,9 @@ import java.util.List;
 
         @Autowired
         private TaskRepository taskRepository;
+        // @Autowired
+        // private GroupTaskRepository groupTaskRepository;
+
 
         @GetMapping
         public List<TaskVM> getAllTasks() {
@@ -33,6 +37,24 @@ import java.util.List;
                 return ResponseEntity.notFound().build();
             }
         }
+        @GetMapping("/personal/{userId}")
+        public ResponseEntity<List<TaskVM>> getPersonalTasks(@PathVariable int userId) {
+            List<TaskVM> tasks = taskRepository.findPersonalTasksByUserId(userId);
+            if(tasks.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(tasks);
+        }
+
+        @GetMapping("/group/{groupId}")
+        public ResponseEntity<List<TaskVM>> getGroupTasks(@PathVariable int groupId) {
+            List<TaskVM> tasks = taskRepository.findGroupTasksByGroupId(groupId);
+            if(tasks.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(tasks);
+        }
+
 
         @PostMapping
         public ResponseEntity<Task> createTask(@RequestBody TaskVM task) {
@@ -67,18 +89,24 @@ import java.util.List;
             return ResponseEntity.ok(updatedTask);
         }
 
-        @DeleteMapping("/{id}")
-        public ResponseEntity<Void> deleteTask(@PathVariable int id) {
-            try {
-                Task task = taskRepository.findById(id).orElse(null);
-                if (task == null) {
-                    return ResponseEntity.notFound().build();
-                }
-                taskRepository.deleteById_task(id);
-                return ResponseEntity.noContent().build();
-            } catch (Exception e) {
-                return ResponseEntity.status(500).build();
-            }
-        }
+        // @DeleteMapping("/{id}")
+        // public ResponseEntity<Void> deleteTask(@PathVariable int id) {
+        //     Task task = taskRepository.findById(id).orElse(null);
+        //     if (task == null) {
+        //         return ResponseEntity.notFound().build();
+        //     }
+        //     try {
+        //     // Xóa các bản ghi liên quan trong bảng GroupTask
+        //     List<GroupTask> groupTasks = groupTaskRepository.findByTask(task);
+        //     groupTaskRepository.deleteAll(groupTasks);
+
+        //     // Xóa Task
+        //     taskRepository.delete(task);
+        //     return ResponseEntity.noContent().build();
+        // } catch (DataIntegrityViolationException e) {
+        //     return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        // }
+        // }
+
     }
 
