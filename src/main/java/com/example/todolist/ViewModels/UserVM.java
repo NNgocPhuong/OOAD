@@ -4,6 +4,7 @@ public class UserVM {
     private String fullName;
     private String role;
     private String username;
+    private String password;
     private String email;
     private Integer userId; 
 
@@ -22,12 +23,20 @@ public class UserVM {
     public void setUserId(Integer userId) {
         this.userId = userId;
     }
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     // Constructor, getters, and setters
-    public UserVM(Integer userId, String fullName, String role, String username, String email) {
+    public UserVM(Integer userId, String fullName, String role, String username, String password, String email) {
         this.fullName = fullName;
         this.role = role;
         this.username = username;
+        this.password = password;
         this.email = email;
         this.userId = userId;
     }

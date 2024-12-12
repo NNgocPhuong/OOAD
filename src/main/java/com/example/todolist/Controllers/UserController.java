@@ -1,10 +1,12 @@
 package com.example.todolist.Controllers;
 
+import com.example.todolist.Config.PasswordUtil;
 import com.example.todolist.Models.User;
 import com.example.todolist.Repository.UserRepository;
 import com.example.todolist.ViewModels.UserVM;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +20,8 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping
-    public List<UserVM> getAllUsers() {
-        return userRepository.findAll_user();
+    public ResponseEntity<List<UserVM>> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll_user());
     }
     @GetMapping("/{id}")
     public ResponseEntity<UserVM> getUserById(@PathVariable Integer id) {
@@ -30,17 +32,56 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<User> createUser(@RequestBody UserVM userVM) {
-    if(userVM == null) {
-        return ResponseEntity.badRequest().build();
+        if(userVM == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        User user = new User();
+        user.setFullName(userVM.getFullName());
+        user.setRole(userVM.getRole());
+        user.setUsername(userVM.getUsername());
+        user.setPassword(PasswordUtil.hashPassword(userVM.getPassword()));
+        user.setEmail(userVM.getEmail());
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok(savedUser);
     }
-    User user = new User();
-    user.setFullName(userVM.getFullName());
-    user.setRole(userVM.getRole());
-    user.setUsername(userVM.getUsername());
-    user.setEmail(userVM.getEmail());
-    User savedUser = userRepository.save(user);
-    return ResponseEntity.ok(savedUser);
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody UserVM userVM) {
+        User user = userRepository.findById(id).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        user.setFullName(userVM.getFullName());
+        user.setRole(userVM.getRole());
+        user.setUsername(userVM.getUsername());
+        user.setPassword(PasswordUtil.hashPassword(userVM.getPassword()));
+        user.setEmail(userVM.getEmail());
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok(savedUser);
     }
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody UserVM loginRequest) {
+        // Kiểm tra đầu vào
+        if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
+            return ResponseEntity.badRequest().body("Username or password is missing");
+        }
+
+        // Tìm người dùng theo username
+        User user = userRepository.findByUsername(loginRequest.getUsername());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+
+        // Kiểm tra mật khẩu
+        boolean passwordMatches = PasswordUtil.verifyPassword(loginRequest.getPassword(), user.getPassword());
+        if (!passwordMatches) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        // Xác thực thành công
+        return ResponseEntity.ok("Login successful");
+    }
+
 }
