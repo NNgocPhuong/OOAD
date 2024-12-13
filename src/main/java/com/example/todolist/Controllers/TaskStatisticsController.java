@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.todolist.Models.TaskStatistics;
 import com.example.todolist.Repository.TaskStatisticsRepository;
+import com.example.todolist.ViewModels.TaskStatisticsVM;
 
 @RestController
 @RequestMapping("/taskstatistics")
@@ -18,7 +18,7 @@ public class TaskStatisticsController {
     private TaskStatisticsRepository taskStatisticsRepository;
 
     @GetMapping
-    public ResponseEntity<List<TaskStatistics>> getAllTaskStatistics() {
-        return ResponseEntity.ok(taskStatisticsRepository.findAll());
+    public ResponseEntity<List<TaskStatisticsVM>> getAllTaskStatistics() {
+        return ResponseEntity.ok(taskStatisticsRepository.findAllTaskStatistics());
     }
 }
