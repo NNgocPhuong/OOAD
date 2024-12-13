@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Map;
+
 
 @RestController
 @RequestMapping("/users")
@@ -64,7 +64,7 @@ public class UserController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginVM loginRequest) {
+    public ResponseEntity<String> login(@RequestBody LoginVM loginRequest) {
     // Kiểm tra đầu vào
     if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
         return ResponseEntity.badRequest().body("Username or password is missing");
@@ -82,16 +82,15 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
 
-    return ResponseEntity.ok(Map.of(
-        "message", "Login successful"));
+    // Xác thực thành công
+    return ResponseEntity.ok("Login successful");
 }
 
 
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        // Không cần thao tác gì đặc biệt với server, chỉ trả về thông báo thành công
-        return ResponseEntity.ok(Map.of(
-            "message", "Logout successful"
-        ));
+    public ResponseEntity<String> logout() {
+        
+        return ResponseEntity.ok("Logout successful");
     }
 }
