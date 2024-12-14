@@ -8,6 +8,7 @@ import com.example.todolist.ViewModels.UserVM;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -35,14 +36,14 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<User> createUser(@RequestBody UserVM userVM) {
-        if(userVM == null) {
+        if (userVM == null) {
             return ResponseEntity.badRequest().build();
         }
         User user = new User();
         user.setFullName(userVM.getFullName());
         user.setRole(userVM.getRole());
         user.setUsername(userVM.getUsername());
-        user.setPassword(PasswordUtil.hashPassword(userVM.getPassword()));
+        user.setPassword(new BCryptPasswordEncoder().encode(userVM.getPassword())); // Mã hóa mật khẩu
         user.setEmail(userVM.getEmail());
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
@@ -57,7 +58,7 @@ public class UserController {
         user.setFullName(userVM.getFullName());
         user.setRole(userVM.getRole());
         user.setUsername(userVM.getUsername());
-        user.setPassword(PasswordUtil.hashPassword(userVM.getPassword()));
+        user.setPassword(new BCryptPasswordEncoder().encode(userVM.getPassword()));
         user.setEmail(userVM.getEmail());
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);

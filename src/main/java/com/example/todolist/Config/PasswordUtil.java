@@ -4,17 +4,21 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 public class PasswordUtil {
+    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
     // Hàm mã hóa mật khẩu bằng SHA-256
-    public static String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return bytesToHex(encodedHash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error occurred while hashing password", e);
-        }
-    }
+    // public static String hashPassword(String password) {
+    //     try {
+    //         MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    //         byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+    //         return bytesToHex(encodedHash);
+    //     } catch (NoSuchAlgorithmException e) {
+    //         throw new RuntimeException("Error occurred while hashing password", e);
+    //     }
+    // }
 
     // Chuyển byte[] thành chuỗi hex
     private static String bytesToHex(byte[] hash) {
@@ -28,8 +32,15 @@ public class PasswordUtil {
     }
 
     // Hàm kiểm tra mật khẩu
-    public static boolean verifyPassword(String plainPassword, String hashedPassword) {
-        String hashedPlainPassword = hashPassword(plainPassword);
-        return hashedPlainPassword.equals(hashedPassword);
+    // public static boolean verifyPassword(String plainPassword, String hashedPassword) {
+    //     String hashedPlainPassword = hashPassword(plainPassword);
+    //     return hashedPlainPassword.equals(hashedPassword);
+    // }
+
+    public static String hashPassword(String rawPassword) {
+        return encoder.encode(rawPassword);
+    }
+    public static boolean verifyPassword(String rawPassword, String encodedPassword) {
+        return encoder.matches(rawPassword, encodedPassword);
     }
 }
