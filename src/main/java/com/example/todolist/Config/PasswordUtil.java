@@ -1,9 +1,5 @@
 package com.example.todolist.Config;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class PasswordUtil {
@@ -21,15 +17,15 @@ public class PasswordUtil {
     // }
 
     // Chuyển byte[] thành chuỗi hex
-    private static String bytesToHex(byte[] hash) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.toString();
-    }
+    // private static String bytesToHex(byte[] hash) {
+    //     StringBuilder hexString = new StringBuilder();
+    //     for (byte b : hash) {
+    //         String hex = Integer.toHexString(0xff & b);
+    //         if (hex.length() == 1) hexString.append('0');
+    //         hexString.append(hex);
+    //     }
+    //     return hexString.toString();
+    // }
 
     // Hàm kiểm tra mật khẩu
     // public static boolean verifyPassword(String plainPassword, String hashedPassword) {
