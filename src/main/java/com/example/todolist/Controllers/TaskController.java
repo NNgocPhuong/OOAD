@@ -2,6 +2,7 @@ package com.example.todolist.Controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.todolist.Models.Task;
@@ -19,8 +20,6 @@ import java.util.List;
 
         @Autowired
         private TaskRepository taskRepository;
-        // @Autowired
-        // private GroupTaskRepository groupTaskRepository;
 
 
         @GetMapping
@@ -88,25 +87,14 @@ import java.util.List;
             Task updatedTask = taskRepository.save(task);
             return ResponseEntity.ok(updatedTask);
         }
-
-        // @DeleteMapping("/{id}")
-        // public ResponseEntity<Void> deleteTask(@PathVariable int id) {
-        //     Task task = taskRepository.findById(id).orElse(null);
-        //     if (task == null) {
-        //         return ResponseEntity.notFound().build();
-        //     }
-        //     try {
-        //     // Xóa các bản ghi liên quan trong bảng GroupTask
-        //     List<GroupTask> groupTasks = groupTaskRepository.findByTask(task);
-        //     groupTaskRepository.deleteAll(groupTasks);
-
-        //     // Xóa Task
-        //     taskRepository.delete(task);
-        //     return ResponseEntity.noContent().build();
-        // } catch (DataIntegrityViolationException e) {
-        //     return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-        // }
-        // }
-
+        @PutMapping("/{taskId}/assign/{userId}")
+        @PreAuthorize("hasRole('MANAGER')")
+        public ResponseEntity<Void> assignUserToTask(@PathVariable int taskId, @PathVariable int userId) {
+            if(taskRepository.findById(taskId).isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            taskRepository.assignUserToTask(taskId, userId);
+            return ResponseEntity.ok().build();
+        }
     }
 

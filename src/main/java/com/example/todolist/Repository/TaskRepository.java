@@ -3,9 +3,12 @@ package com.example.todolist.Repository;
 import com.example.todolist.Models.*;
 import com.example.todolist.ViewModels.TaskVM;
 
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface TaskRepository extends JpaRepository<Task, Integer> {
@@ -25,4 +28,9 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     @Query("SELECT new com.example.todolist.ViewModels.TaskVM(t.taskId, t.title, t.description, t.status, t.priority, t.createdAt, t.updatedAt) FROM Task t JOIN GroupTask gt ON t.taskId = gt.task.taskId WHERE gt.group.groupId = :groupId")
     List<TaskVM> findGroupTasksByGroupId(int groupId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Task t SET t.assignedUser.userId = :userId WHERE t.taskId = :taskId")
+    void assignUserToTask(int taskId, int userId);
 }
