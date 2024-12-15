@@ -1,8 +1,11 @@
 package com.example.todolist.Controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.todolist.Models.Task;
@@ -36,23 +39,28 @@ import java.util.List;
                 return ResponseEntity.notFound().build();
             }
         }
-        @GetMapping("/personal/{userId}")
-        public ResponseEntity<List<TaskVM>> getPersonalTasks(@PathVariable int userId) {
-            List<TaskVM> tasks = taskRepository.findPersonalTasksByUserId(userId);
-            if(tasks.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(tasks);
+        @GetMapping("/personal")
+    public ResponseEntity<List<TaskVM>> getPersonalTasks(@AuthenticationPrincipal UserDetails currentUser) {
+        List<TaskVM> tasks = taskRepository.findPersonalTasksByUserId(currentUser.getUsername());
+        if (tasks.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(tasks);
+    }
 
-        @GetMapping("/group/{groupId}")
-        public ResponseEntity<List<TaskVM>> getGroupTasks(@PathVariable int groupId) {
-            List<TaskVM> tasks = taskRepository.findGroupTasksByGroupId(groupId);
-            if(tasks.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(tasks);
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<TaskVM>> getGroupTasks(@PathVariable int groupId, @AuthenticationPrincipal UserDetails currentUser) {
+        // Kiểm tra xem người dùng hiện tại có thuộc nhóm này không
+        if (!taskRepository.isUserInGroup(currentUser.getUsername(), groupId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        List<TaskVM> tasks = taskRepository.findGroupTasksByGroupId(groupId);
+        if (tasks.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(tasks);
+    }
+
 
 
         @PostMapping

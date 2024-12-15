@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "TaskShare")
+@Table(name = "Task_share")
 @Data
 public class TaskShare {
     @Id

@@ -8,6 +8,8 @@ import com.example.todolist.ViewModels.UserVM;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -50,9 +52,14 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody UserVM userVM) {
+    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody UserVM userVM, @AuthenticationPrincipal UserDetails currentUser) {
+        // Kiểm tra xem người dùng hiện tại có phải là người dùng đang được cập nhật hay không
+        if (!currentUser.getUsername().equals(userRepository.findById(id).orElse(null).getUsername())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         User user = userRepository.findById(id).orElse(null);
-        if(user == null) {
+        if (user == null) {
             return ResponseEntity.notFound().build();
         }
         user.setFullName(userVM.getFullName());
