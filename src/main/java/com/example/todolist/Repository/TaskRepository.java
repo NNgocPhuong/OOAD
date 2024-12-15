@@ -23,12 +23,14 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     @Query("DELETE FROM Task t WHERE t.taskId = :id")
     void deleteById_task(int id);
 
-    @Query("SELECT new com.example.todolist.ViewModels.TaskVM(t.taskId, t.title, t.description, t.status, t.priority, t.createdAt, t.updatedAt) FROM Task t WHERE t.assignedUser.userId = :userId")
-    List<TaskVM> findPersonalTasksByUserId(int userId);
+    @Query("SELECT new com.example.todolist.ViewModels.TaskVM(t.taskId, t.title, t.description, t.status, t.priority, t.createdAt, t.updatedAt) FROM Task t WHERE t.assignedUser.username = :username")
+    List<TaskVM> findPersonalTasksByUserId(String username);
 
     @Query("SELECT new com.example.todolist.ViewModels.TaskVM(t.taskId, t.title, t.description, t.status, t.priority, t.createdAt, t.updatedAt) FROM Task t JOIN GroupTask gt ON t.taskId = gt.task.taskId WHERE gt.group.groupId = :groupId")
     List<TaskVM> findGroupTasksByGroupId(int groupId);
 
+    @Query("SELECT COUNT(ug) > 0 FROM UserGroup ug JOIN User u ON ug.user.userId = u.userId WHERE ug.group.groupId = :groupId AND u.username = :username")
+    boolean isUserInGroup(String username, int groupId);
     @Modifying
     @Transactional
     @Query("UPDATE Task t SET t.assignedUser.userId = :userId WHERE t.taskId = :taskId")
