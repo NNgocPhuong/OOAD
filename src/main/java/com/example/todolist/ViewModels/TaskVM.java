@@ -8,22 +8,13 @@ public class TaskVM {
     private String description;
     private String status;
     private String priority;
-    public String getPriority() {
-        return priority;
-    }
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
-
-    private LocalDateTime createdAt; // cmt1
-    private LocalDateTime updatedAt; // cmt2
-
-    public TaskVM() {
-    }
+    // Constructors, getters, and setters
 
     public TaskVM(Integer taskId, String title, String description, String status, String priority, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.taskId = taskId; // cmt3
+        this.taskId = taskId;
         this.title = title;
         this.description = description;
         this.status = status;
@@ -39,6 +30,7 @@ public class TaskVM {
     public void setTaskId(Integer taskId) {
         this.taskId = taskId;
     }
+
     public String getTitle() {
         return title;
     }
@@ -46,6 +38,7 @@ public class TaskVM {
     public void setTitle(String title) {
         this.title = title;
     }
+
     public String getDescription() {
         return description;
     }
@@ -62,6 +55,13 @@ public class TaskVM {
         this.status = status;
     }
 
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
