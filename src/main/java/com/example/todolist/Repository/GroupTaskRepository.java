@@ -1,9 +1,9 @@
 package com.example.todolist.Repository;
 
+import com.example.todolist.Models.GroupTask;
+import com.example.todolist.Models.GroupTaskId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.todolist.Models.GroupTask;
-
-public interface GroupTaskRepository extends JpaRepository<GroupTask, Integer> {
-    
+public interface GroupTaskRepository extends JpaRepository<GroupTask, GroupTaskId> {
+    // Các truy vấn tùy chỉnh nếu cần
 }
