@@ -9,7 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.todolist.Models.Task;
+import com.example.todolist.Models.User;
 import com.example.todolist.Repository.TaskRepository;
+import com.example.todolist.Repository.UserRepository;
 import com.example.todolist.ViewModels.TaskVM;
 
 import java.time.LocalDateTime;
@@ -23,63 +25,61 @@ import java.util.List;
 
         @Autowired
         private TaskRepository taskRepository;
-
-
-        @GetMapping
-        public List<TaskVM> getAllTasks() {
-            return taskRepository.findAll_task();
-        }
-
-        @GetMapping("/{id}")
-        public ResponseEntity<TaskVM> getTaskById(@PathVariable int id) {
-            TaskVM task = taskRepository.findById_task(id);
-            if (task != null) {
-                return ResponseEntity.ok(task);
-            } else {
-                return ResponseEntity.notFound().build();
+        @Autowired
+        private UserRepository userRepository;
+        
+        
+                @GetMapping
+                public List<TaskVM> getAllTasks() {
+                    return taskRepository.findAll_task();
+                }
+        
+                @GetMapping("/{id}")
+                public ResponseEntity<TaskVM> getTaskById(@PathVariable int id) {
+                    TaskVM task = taskRepository.findById_task(id);
+                    if (task != null) {
+                        return ResponseEntity.ok(task);
+                    } else {
+                        return ResponseEntity.notFound().build();
+                    }
+                }
+                @GetMapping("/personal")
+            public ResponseEntity<List<TaskVM>> getPersonalTasks(@AuthenticationPrincipal UserDetails currentUser) {
+                List<TaskVM> tasks = taskRepository.findPersonalTasksByUserId(currentUser.getUsername());
+                if (tasks.isEmpty()) {
+                    return ResponseEntity.notFound().build();
+                }
+                return ResponseEntity.ok(tasks);
             }
-        }
-        @GetMapping("/personal")
-    public ResponseEntity<List<TaskVM>> getPersonalTasks(@AuthenticationPrincipal UserDetails currentUser) {
-        List<TaskVM> tasks = taskRepository.findPersonalTasksByUserId(currentUser.getUsername());
-        if (tasks.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(tasks);
-    }
-
-    @GetMapping("/group/{groupId}")
-    public ResponseEntity<List<TaskVM>> getGroupTasks(@PathVariable int groupId, @AuthenticationPrincipal UserDetails currentUser) {
-        // Kiểm tra xem người dùng hiện tại có thuộc nhóm này không
-        if (!taskRepository.isUserInGroup(currentUser.getUsername(), groupId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        List<TaskVM> tasks = taskRepository.findGroupTasksByGroupId(groupId);
-        if (tasks.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(tasks);
-    }
-
-
-
+        
+            @GetMapping("/group/{groupId}")
+            public ResponseEntity<List<TaskVM>> getGroupTasks(@PathVariable int groupId, @AuthenticationPrincipal UserDetails currentUser) {
+                // Kiểm tra xem người dùng hiện tại có thuộc nhóm này không
+                if (!taskRepository.isUserInGroup(currentUser.getUsername(), groupId)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+                List<TaskVM> tasks = taskRepository.findGroupTasksByGroupId(groupId);
+                if (tasks.isEmpty()) {
+                    return ResponseEntity.notFound().build();
+                }
+                return ResponseEntity.ok(tasks);
+            }
+        
+        
+        
         @PostMapping
-        public ResponseEntity<Task> createTask(@RequestBody TaskVM task) {
-            if(task == null) {
-                return ResponseEntity.badRequest().build();
+        public ResponseEntity<Task> createTask(@RequestBody Task task, @AuthenticationPrincipal UserDetails currentUser) {
+            User user = userRepository.findByUsername(currentUser.getUsername());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            Task newTask = new Task();
-            newTask.setTaskId(task.getTaskId());
-            newTask.setTitle(task.getTitle());
-            newTask.setDescription(task.getDescription());
-            newTask.setStatus(task.getStatus());
-            newTask.setPriority(task.getPriority());
-            newTask.setCreatedAt(LocalDateTime.now());
-            newTask.setUpdatedAt(task.getUpdatedAt());
-            
-            Task savedTask = taskRepository.save(newTask);
-            return ResponseEntity.ok(savedTask);
-        }
+
+            task.setAssignedUser(user); // Gán nhiệm vụ cho người dùng hiện tại
+            task.setCreatedAt(LocalDateTime.now());
+            task.setUpdatedAt(LocalDateTime.now());
+            Task savedTask = taskRepository.save(task);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedTask);
+    }
 
         @PutMapping("/{id}")
         public ResponseEntity<Task> updateTask(@PathVariable int id, @RequestBody TaskVM taskDetails) {
