@@ -17,6 +17,7 @@ import com.example.todolist.Models.GroupTask;
 import com.example.todolist.Models.Task;
 import com.example.todolist.Models.User;
 import com.example.todolist.Models.UserGroup;
+import com.example.todolist.Models.UserGroupId;
 import com.example.todolist.Repository.GroupRepository;
 import com.example.todolist.Repository.GroupTaskRepository;
 import com.example.todolist.Repository.TaskRepository;
@@ -190,6 +191,40 @@ public class GroupController {
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    // API xóa thành viên khỏi nhóm
+    @DeleteMapping("/{groupId}/members/{userId}")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<Void> removeMemberFromGroup(
+            @PathVariable int groupId,
+            @PathVariable int userId,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        User manager = userRepository.findByUsername(currentUser.getUsername());
+        if (manager == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        boolean isManager = userGroupRepository.existsByUserAndGroupAndRole(manager, groupId, "manager");
+        if (!isManager) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Optional<Group> groupOpt = groupRepository.findById(groupId);
+        if (groupOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Optional<UserGroup> userGroupOpt = userGroupRepository.findById(new UserGroupId(userId, groupId));
+        if (userGroupOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        userGroupRepository.delete(userGroupOpt.get());
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+
     @PostMapping("/{groupId}/tasks")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> assignTaskToGroup(@PathVariable int groupId, @RequestBody Task task, @AuthenticationPrincipal UserDetails currentUser) {
@@ -220,4 +255,5 @@ public class GroupController {
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
 }
