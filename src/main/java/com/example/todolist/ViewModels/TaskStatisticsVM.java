@@ -1,9 +1,14 @@
 package com.example.todolist.ViewModels;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class TaskStatisticsVM {
     private Integer statisticId;
     private Integer totalTasks = 0;
+
+    @JsonProperty("completed")
     private Integer completedTasks = 0;
+    
     private Integer pendingTasks = 0;
     private Integer importantTasks = 0;
     
