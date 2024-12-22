@@ -8,7 +8,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,18 +25,15 @@ public class TaskStatisticsController {
     @Autowired
     private UserRepository userRepository;
 
-    // Mỗi người dùng chỉ có thể xem task statistics của chính mình
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<TaskStatisticsVM>> getAllTaskStatisticsByUserId(@PathVariable Integer userId) {
+    @GetMapping
+    public ResponseEntity<List<TaskStatisticsVM>> getAllTaskStatistics() {
         // Lấy thông tin người dùng hiện tại
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = ((UserDetails) authentication.getPrincipal()).getUsername();
         User currentUser = userRepository.findByUsername(currentUsername);
 
-        // Kiểm tra xem userId có khớp với userId của người dùng hiện tại không
-        if (!currentUser.getUserId().equals(userId)) {
-            return ResponseEntity.status(403).build(); // Trả về mã trạng thái 403 Forbidden nếu không khớp
-        }
+        // Lấy userId từ người dùng hiện tại
+        Integer userId = currentUser.getUserId();
 
         List<TaskStatisticsVM> taskStatistics = taskStatisticsRepository.findAllTaskStatisticsByUserId(userId);
         return ResponseEntity.ok(taskStatistics);
