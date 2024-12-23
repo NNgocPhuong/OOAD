@@ -70,7 +70,7 @@ import java.util.List;
         @PostMapping
         public ResponseEntity<Task> createTask(@RequestBody Task task, @AuthenticationPrincipal UserDetails currentUser) {
             User user = userRepository.findByUsername(currentUser.getUsername());
-            if (user == null) {
+            if (user == null) { 
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
