@@ -63,7 +63,7 @@ public class GroupController {
                             userGroup.getUser().getPassword(),
                             userGroup.getUser().getEmail()
                     ))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()); // Lấy thông tin thành viên của nhóm
 
             List<TaskVM> groupTasks = group.getGroupTasks().stream()
                     .map(groupTask -> new TaskVM(
@@ -75,7 +75,7 @@ public class GroupController {
                             groupTask.getTask().getCreatedAt(),
                             groupTask.getTask().getUpdatedAt()
                     ))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()); // Lấy thông tin công việc của nhóm
 
             return new GroupVM(group.getGroupId(), group.getGroupName(), members, groupTasks);
         }).collect(Collectors.toList());
@@ -224,7 +224,7 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-
+    // API thêm công việc vào nhóm
     @PostMapping("/{groupId}/tasks")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> assignTaskToGroup(@PathVariable int groupId, @RequestBody Task task, @AuthenticationPrincipal UserDetails currentUser) {
