@@ -43,7 +43,11 @@ public class UserController {
         }
         User user = new User();
         user.setFullName(userVM.getFullName());
-        user.setRole(userVM.getRole());
+        if(userVM.getRole() == null) {
+            user.setRole("manager");
+        } else {
+            user.setRole(userVM.getRole());
+        }
         user.setUsername(userVM.getUsername());
         user.setPassword(new BCryptPasswordEncoder().encode(userVM.getPassword())); // Mã hóa mật khẩu
         user.setEmail(userVM.getEmail());
