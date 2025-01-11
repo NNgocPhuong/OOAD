@@ -44,7 +44,7 @@ public class UserController {
         User user = new User();
         user.setFullName(userVM.getFullName());
         if(userVM.getRole() == null) {
-            user.setRole("manager");
+            user.setRole("member");
         } else {
             user.setRole(userVM.getRole());
         }

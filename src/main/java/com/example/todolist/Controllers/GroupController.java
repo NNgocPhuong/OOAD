@@ -149,9 +149,13 @@ public class GroupController {
         userGroup.setUser(user);
         userGroup.setGroup(group);
         userGroup.setRole("manager"); // Người tạo nhóm là quản lý
-        userGroup.getUser().setRole("manager");
+        // userGroup.getUser().setRole("manager");
         userGroupRepository.save(userGroup);
 
+        // Cập nhật vai trò của người dùng
+        user.setRole("manager");
+        userRepository.save(user); // Lưu đối tượng User sau khi cập nhật vai trò
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(group);
     }
 
