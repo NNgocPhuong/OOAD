@@ -63,5 +63,11 @@ public class TaskController {
         return taskService.assignUserToTask(taskId, userId)
                 .thenApply(v -> ResponseEntity.ok().build());
     }
+
+    @GetMapping("/group")
+    public CompletableFuture<ResponseEntity<List<TaskVM>>> getAllGroupTasks(@AuthenticationPrincipal UserDetails currentUser) {
+        return taskService.getAllGroupTasks(currentUser.getUsername())
+                .thenApply(tasks -> tasks.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(tasks));
+    }
 }
 

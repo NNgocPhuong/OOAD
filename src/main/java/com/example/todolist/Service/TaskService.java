@@ -5,6 +5,9 @@ import com.example.todolist.Models.User;
 import com.example.todolist.Repository.TaskRepository;
 import com.example.todolist.Repository.UserRepository;
 import com.example.todolist.ViewModels.TaskVM;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -81,6 +85,20 @@ public class TaskService {
                 throw new RuntimeException("Task not found");
             }
             taskRepository.assignUserToTask(taskId, userId);
+        });
+    }
+
+    @Async("taskExecutor")
+    @Transactional
+    public CompletableFuture<List<TaskVM>> getAllGroupTasks(String username) {
+        return CompletableFuture.supplyAsync(() -> {
+            User user = userRepository.findByUsername(username);
+            if (user == null) {
+                throw new RuntimeException("User not found");
+            }
+            return user.getUserGroups().stream()
+                    .flatMap(userGroup -> taskRepository.findGroupTasksByGroupId(userGroup.getGroup().getGroupId()).stream())
+                    .collect(Collectors.toList());
         });
     }
 }
