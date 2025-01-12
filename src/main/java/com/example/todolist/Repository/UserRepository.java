@@ -2,6 +2,7 @@ package com.example.todolist.Repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +16,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT new com.example.todolist.ViewModels.UserVM(u.userId, u.fullName, u.role, u.username, u.password, u.email) FROM User u WHERE u.userId = :id")
     UserVM findUserById(Integer id);
-
+    
+    @EntityGraph(attributePaths = {"userGroups.group"})
     @Query("SELECT u FROM User u WHERE u.username = :username")
     User findByUsername(@Param("username") String username);
 
