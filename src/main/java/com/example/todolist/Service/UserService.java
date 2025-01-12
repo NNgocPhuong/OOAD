@@ -35,6 +35,16 @@ public class UserService {
     }
 
     @Async("taskExecutor")
+    public CompletableFuture<UserVM> getPersonalInfo(String username) {
+        return CompletableFuture.supplyAsync(() -> {
+            User user = userRepository.findByUsername(username);
+            if (user == null) {
+                throw new RuntimeException("User not found");
+            }
+            return new UserVM(user.getUserId(), user.getFullName(), user.getRole(), user.getUsername(), user.getPassword(), user.getEmail());
+        });
+    }
+    @Async("taskExecutor")
     public CompletableFuture<User> createUser(UserVM userVM) {
         return CompletableFuture.supplyAsync(() -> {
             User user = new User();
