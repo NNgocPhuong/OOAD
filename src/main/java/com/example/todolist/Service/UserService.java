@@ -5,6 +5,8 @@ import com.example.todolist.Models.User;
 import com.example.todolist.Repository.UserRepository;
 import com.example.todolist.ViewModels.LoginVM;
 import com.example.todolist.ViewModels.UserVM;
+
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -69,7 +72,15 @@ public class UserService {
             if (!passwordMatches) {
                 throw new RuntimeException("Invalid credentials");
             }
-            return "{\"message\": \"Login successful\", \"role\": \"" + user.getRole() + "\"}";
+            // Khởi tạo các thuộc tính LAZY
+            Hibernate.initialize(user.getUserGroups());
+
+            // Lấy danh sách các nhóm mà người dùng tham gia
+            List<Integer> groupIds = user.getUserGroups().stream()
+                    .map(userGroup -> userGroup.getGroup().getGroupId())
+                    .collect(Collectors.toList());
+
+            return "{\"message\": \"Login successful\", \"role\": \"" + user.getRole() + "\", \"groupIds\": " + groupIds + "}";
         });
     }
 
