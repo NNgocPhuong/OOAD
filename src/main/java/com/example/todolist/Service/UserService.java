@@ -6,6 +6,8 @@ import com.example.todolist.Repository.UserRepository;
 import com.example.todolist.ViewModels.LoginVM;
 import com.example.todolist.ViewModels.UserVM;
 
+import jakarta.transaction.Transactional;
+
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -87,5 +89,19 @@ public class UserService {
     @Async("taskExecutor")
     public CompletableFuture<String> logout() {
         return CompletableFuture.completedFuture("Logout successful");
+    }
+    @Async("taskExecutor")
+    @Transactional
+    public CompletableFuture<List<Integer>> getUserGroups(String username) {
+        return CompletableFuture.supplyAsync(() -> {
+            User user = userRepository.findByUsername(username);
+            if (user == null) {
+                throw new RuntimeException("User not found");
+            }
+            Hibernate.initialize(user.getUserGroups());
+            return user.getUserGroups().stream()
+                    .map(userGroup -> userGroup.getGroup().getGroupId())
+                    .collect(Collectors.toList());
+        });
     }
 }
