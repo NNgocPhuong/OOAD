@@ -33,6 +33,12 @@ public class UserController {
                 .thenApply(user -> user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/personal")
+    public CompletableFuture<ResponseEntity<UserVM>> getPersonalInfo(@AuthenticationPrincipal UserDetails currentUser) {
+        return userService.getPersonalInfo(currentUser.getUsername())
+                .thenApply(ResponseEntity::ok);
+    }
+
     @PostMapping("/register")
     public CompletableFuture<ResponseEntity<User>> createUser(@RequestBody UserVM userVM) {
         return userService.createUser(userVM)
