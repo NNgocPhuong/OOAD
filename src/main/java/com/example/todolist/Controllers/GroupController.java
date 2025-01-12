@@ -1,7 +1,6 @@
 package com.example.todolist.Controllers;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,208 +45,136 @@ public class GroupController {
     @Autowired
     private GroupTaskRepository groupTaskRepository;
 
-    /**
-     * API: Lấy danh sách tất cả các nhóm
-     */
+    // Tiện ích để tạo danh sách thành viên từ nhóm
+    private List<UserVM> mapMembersFromGroup(Group group) {
+        return group.getUserGroups().stream()
+                .map(userGroup -> new UserVM(
+                        userGroup.getUser().getUserId(),
+                        userGroup.getUser().getFullName(),
+                        userGroup.getUser().getRole(),
+                        userGroup.getUser().getUsername(),
+                        userGroup.getUser().getPassword(),
+                        userGroup.getUser().getEmail()))
+                .collect(Collectors.toList());
+    }
+
+    // Tiện ích để tạo danh sách công việc từ nhóm
+    private List<TaskVM> mapTasksFromGroup(Group group) {
+        return group.getGroupTasks().stream()
+                .map(groupTask -> new TaskVM(
+                        groupTask.getTask().getTaskId(),
+                        groupTask.getTask().getTitle(),
+                        groupTask.getTask().getDescription(),
+                        groupTask.getTask().getStatus(),
+                        groupTask.getTask().getPriority(),
+                        groupTask.getTask().getCreatedAt(),
+                        groupTask.getTask().getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
     @GetMapping
     public ResponseEntity<List<GroupVM>> getAllGroups() {
-        List<Group> groups = groupRepository.findAll(); // Lấy toàn bộ nhóm
+        List<Group> groups = groupRepository.findAll();
 
-        List<GroupVM> groupVMs = groups.stream().map(group -> {
-            List<UserVM> members = group.getUserGroups().stream()
-                    .map(userGroup -> new UserVM(
-                            userGroup.getUser().getUserId(),
-                            userGroup.getUser().getFullName(),
-                            userGroup.getUser().getRole(),
-                            userGroup.getUser().getUsername(),
-                            userGroup.getUser().getPassword(),
-                            userGroup.getUser().getEmail()
-                    ))
-                    .collect(Collectors.toList()); // Lấy thông tin thành viên của nhóm
-
-            List<TaskVM> groupTasks = group.getGroupTasks().stream()
-                    .map(groupTask -> new TaskVM(
-                            groupTask.getTask().getTaskId(),
-                            groupTask.getTask().getTitle(),
-                            groupTask.getTask().getDescription(),
-                            groupTask.getTask().getStatus(),
-                            groupTask.getTask().getPriority(),
-                            groupTask.getTask().getCreatedAt(),
-                            groupTask.getTask().getUpdatedAt()
-                    ))
-                    .collect(Collectors.toList()); // Lấy thông tin công việc của nhóm
-
-            return new GroupVM(group.getGroupId(), group.getGroupName(), members, groupTasks);
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(groupVMs); // Trả về danh sách nhóm
-    }
-
-    /**
-     * API: Lấy danh sách các nhóm mà người dùng hiện tại tham gia
-     */
-    @GetMapping("/my-groups")
-    public ResponseEntity<List<GroupVM>> getUserGroups(@AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByUsername(currentUser.getUsername()); // Lấy thông tin người dùng hiện tại
-
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Người dùng không hợp lệ
-        }
-
-        // Lấy danh sách các nhóm mà người dùng tham gia
-        List<UserGroup> userGroups = userGroupRepository.findByUserId(user.getUserId());
-        List<Group> groups = userGroups.stream()
-                .map(UserGroup::getGroup) // Lấy đối tượng Group từ UserGroup
+        List<GroupVM> groupVMs = groups.stream()
+                .map(group -> new GroupVM(
+                        group.getGroupId(),
+                        group.getGroupName(),
+                        mapMembersFromGroup(group),
+                        mapTasksFromGroup(group)))
                 .collect(Collectors.toList());
 
-        List<GroupVM> groupVMs = groups.stream().map(group -> {
-            List<UserVM> members = group.getUserGroups().stream()
-                    .map(userGroup -> new UserVM(
-                            userGroup.getUser().getUserId(),
-                            userGroup.getUser().getFullName(),
-                            userGroup.getUser().getRole(),
-                            userGroup.getUser().getUsername(),
-                            userGroup.getUser().getPassword(),
-                            userGroup.getUser().getEmail()
-                    ))
-                    .collect(Collectors.toList());
-
-            List<TaskVM> groupTasks = group.getGroupTasks().stream()
-                    .map(groupTask -> new TaskVM(
-                            groupTask.getTask().getTaskId(),
-                            groupTask.getTask().getTitle(),
-                            groupTask.getTask().getDescription(),
-                            groupTask.getTask().getStatus(),
-                            groupTask.getTask().getPriority(),
-                            groupTask.getTask().getCreatedAt(),
-                            groupTask.getTask().getUpdatedAt()
-                    ))
-                    .collect(Collectors.toList());
-
-            return new GroupVM(group.getGroupId(), group.getGroupName(), members, groupTasks);
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(groupVMs); // Trả về danh sách nhóm
+        return ResponseEntity.ok(groupVMs);
     }
 
-    // API tạo nhóm mới
-    @PostMapping
-    public ResponseEntity<Group> createGroup(@RequestBody Group group, @AuthenticationPrincipal UserDetails currentUser) {
-        // Lấy thông tin người dùng hiện tại
+    @GetMapping("/my-groups")
+    public ResponseEntity<List<GroupVM>> getUserGroups(@AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepository.findByUsername(currentUser.getUsername());
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Trả về lỗi 401 nếu không tìm thấy
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Lưu thông tin nhóm vào cơ sở dữ liệu
+        List<UserGroup> userGroups = userGroupRepository.findByUserId(user.getUserId());
+        List<GroupVM> groupVMs = userGroups.stream()
+                .map(ug -> new GroupVM(
+                        ug.getGroup().getGroupId(),
+                        ug.getGroup().getGroupName(),
+                        mapMembersFromGroup(ug.getGroup()),
+                        mapTasksFromGroup(ug.getGroup())))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(groupVMs);
+    }
+
+    @PostMapping
+    public ResponseEntity<Group> createGroup(@RequestBody Group group, @AuthenticationPrincipal UserDetails currentUser) {
+        User user = userRepository.findByUsername(currentUser.getUsername());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         group = groupRepository.save(group);
 
-        // Tạo bản ghi UserGroup
         UserGroup userGroup = new UserGroup();
         userGroup.setUserId(user.getUserId());
         userGroup.setGroupId(group.getGroupId());
         userGroup.setUser(user);
         userGroup.setGroup(group);
-        userGroup.setRole("manager"); // Người tạo nhóm là quản lý
-        userGroup.getUser().setRole("manager");
+        userGroup.setRole("manager");
         userGroupRepository.save(userGroup);
 
-        // Cập nhật vai trò của người dùng
         user.setRole("manager");
-        userRepository.save(user); // Lưu đối tượng User sau khi cập nhật vai trò
-        
+        userRepository.save(user);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(group);
     }
 
-    // API thêm thành viên vào nhóm
     @PostMapping("/{groupId}/members")
     public ResponseEntity<Void> addMemberToGroup(
             @PathVariable int groupId,
             @RequestBody User user,
             @AuthenticationPrincipal UserDetails currentUser) {
-        // Lấy thông tin người dùng hiện tại
         User manager = userRepository.findByUsername(currentUser.getUsername());
-        if (manager == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (manager == null || !userGroupRepository.existsByUserAndGroupAndRole(manager, groupId, "manager")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        // Kiểm tra xem người dùng hiện tại có quyền quản lý nhóm hay không
-        boolean isManager = userGroupRepository.existsByUserAndGroupAndRole(manager, groupId, "manager");
-        if (!isManager) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // Nếu không phải quản lý, trả về lỗi 403
+        Group group = groupRepository.findById(groupId).orElse(null);
+        if (group == null) {
+            return ResponseEntity.notFound().build();
         }
 
-        // Kiểm tra nhóm có tồn tại hay không
-        Optional<Group> groupOpt = groupRepository.findById(groupId);
-        if (groupOpt.isEmpty()) {
-            return ResponseEntity.notFound().build(); // Nếu không tìm thấy nhóm, trả về lỗi 404
-        }
-
-        // Tạo bản ghi UserGroup
-        Group group = groupOpt.get();
         UserGroup userGroup = new UserGroup();
         userGroup.setUserId(user.getUserId());
         userGroup.setGroupId(group.getGroupId());
         userGroup.setUser(user);
         userGroup.setGroup(group);
-        userGroup.setRole("member"); // Thêm thành viên với vai trò "member"
+        userGroup.setRole("member");
         userGroupRepository.save(userGroup);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    // API xóa thành viên khỏi nhóm
     @DeleteMapping("/{groupId}/members/{userId}")
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<Void> removeMemberFromGroup(
-            @PathVariable int groupId,
-            @PathVariable int userId,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        User manager = userRepository.findByUsername(currentUser.getUsername());
-        if (manager == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        boolean isManager = userGroupRepository.existsByUserAndGroupAndRole(manager, groupId, "manager");
-        if (!isManager) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        Optional<Group> groupOpt = groupRepository.findById(groupId);
-        if (groupOpt.isEmpty()) {
+    public ResponseEntity<Void> removeMemberFromGroup(@PathVariable int groupId, @PathVariable int userId) {
+        UserGroup userGroup = userGroupRepository.findById(new UserGroupId(userId, groupId)).orElse(null);
+        if (userGroup == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Optional<UserGroup> userGroupOpt = userGroupRepository.findById(new UserGroupId(userId, groupId));
-        if (userGroupOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        userGroupRepository.delete(userGroupOpt.get());
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        userGroupRepository.delete(userGroup);
+        return ResponseEntity.noContent().build();
     }
 
-    // API thêm công việc vào nhóm
     @PostMapping("/{groupId}/tasks")
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<Void> assignTaskToGroup(@PathVariable int groupId, @RequestBody Task task, @AuthenticationPrincipal UserDetails currentUser) {
-        User manager = userRepository.findByUsername(currentUser.getUsername());
-        if (manager == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        boolean isManager = userGroupRepository.existsByUserAndGroupAndRole(manager, groupId, "manager");
-        if (!isManager) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        Optional<Group> groupOpt = groupRepository.findById(groupId);
-        if (groupOpt.isEmpty()) {
+    public ResponseEntity<Void> assignTaskToGroup(@PathVariable int groupId, @RequestBody Task task) {
+        Group group = groupRepository.findById(groupId).orElse(null);
+        if (group == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Group group = groupOpt.get();
         task = taskRepository.save(task);
 
         GroupTask groupTask = new GroupTask();
@@ -259,5 +186,4 @@ public class GroupController {
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
 }
