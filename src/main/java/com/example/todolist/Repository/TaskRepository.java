@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TaskRepository extends JpaRepository<Task, Integer> {
     @Query("SELECT new com.example.todolist.ViewModels.TaskVM(t.taskId, t.title, t.description, t.status, t.priority, t.createdAt, t.updatedAt) FROM Task t")
@@ -37,4 +38,8 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     @Transactional
     @Query("UPDATE Task t SET t.assignedUser.userId = :userId WHERE t.taskId = :taskId")
     void assignUserToTask(int taskId, int userId);
+
+    @Modifying
+    @Query("DELETE FROM Task t WHERE t.assignedUser.username = :username")
+    void deleteTasksByUsername(@Param("username") String username);
 }
