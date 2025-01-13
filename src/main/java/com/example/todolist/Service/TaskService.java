@@ -52,7 +52,8 @@ public class TaskService {
     }
 
     @Async("taskExecutor")
-    public CompletableFuture<Task> createTask(Task task, String username) {
+    @Transactional
+    public CompletableFuture<TaskVM> createTask(Task task, String username) {
         return CompletableFuture.supplyAsync(() -> {
             User user = userRepository.findByUsername(username);
             if (user == null) {
@@ -61,7 +62,8 @@ public class TaskService {
             task.setAssignedUser(user);
             task.setCreatedAt(LocalDateTime.now());
             task.setUpdatedAt(LocalDateTime.now());
-            return taskRepository.save(task);
+            Task savedTask = taskRepository.save(task);
+            return new TaskVM(savedTask.getTaskId(), savedTask.getTitle(), savedTask.getDescription(), savedTask.getStatus(), savedTask.getPriority(), savedTask.getCreatedAt(), savedTask.getUpdatedAt());
         });
     }
 
@@ -99,6 +101,17 @@ public class TaskService {
             return user.getUserGroups().stream()
                     .flatMap(userGroup -> taskRepository.findGroupTasksByGroupId(userGroup.getGroup().getGroupId()).stream())
                     .collect(Collectors.toList());
+        });
+    }
+
+
+    @Async("taskExecutor")
+    public CompletableFuture<Void> deleteTask(int id) {
+        return CompletableFuture.runAsync(() -> {
+            if (taskRepository.findById(id).isEmpty()) {
+                throw new RuntimeException("Task not found");
+            }
+            taskRepository.deleteById(id);
         });
     }
 }

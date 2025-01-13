@@ -46,7 +46,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public CompletableFuture<ResponseEntity<Task>> createTask(@RequestBody Task task, @AuthenticationPrincipal UserDetails currentUser) {
+    public CompletableFuture<ResponseEntity<TaskVM>> createTask(@RequestBody Task task, @AuthenticationPrincipal UserDetails currentUser) {
         return taskService.createTask(task, currentUser.getUsername())
                 .thenApply(savedTask -> ResponseEntity.status(HttpStatus.CREATED).body(savedTask));
     }
@@ -68,6 +68,12 @@ public class TaskController {
     public CompletableFuture<ResponseEntity<List<TaskVM>>> getAllGroupTasks(@AuthenticationPrincipal UserDetails currentUser) {
         return taskService.getAllGroupTasks(currentUser.getUsername())
                 .thenApply(tasks -> tasks.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(tasks));
+    }
+    
+    @DeleteMapping("/deleteTask/{id}")
+    public CompletableFuture<ResponseEntity<Void>> deleteTask(@PathVariable int id) {
+        return taskService.deleteTask(id)
+                .thenApply(v -> ResponseEntity.ok().build());
     }
 }
 

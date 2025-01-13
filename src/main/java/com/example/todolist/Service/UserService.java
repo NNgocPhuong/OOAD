@@ -84,15 +84,8 @@ public class UserService {
             if (!passwordMatches) {
                 throw new RuntimeException("Invalid credentials");
             }
-            // Khởi tạo các thuộc tính LAZY
-            Hibernate.initialize(user.getUserGroups());
 
-            // Lấy danh sách các nhóm mà người dùng tham gia
-            List<Integer> groupIds = user.getUserGroups().stream()
-                    .map(userGroup -> userGroup.getGroup().getGroupId())
-                    .collect(Collectors.toList());
-
-            return "{\"message\": \"Login successful\", \"role\": \"" + user.getRole() + "\", \"groupIds\": " + groupIds + "}";
+            return "{\"message\": \"Login successful\", \"role\": \"" + user.getRole() + "\"}";
         });
     }
 
